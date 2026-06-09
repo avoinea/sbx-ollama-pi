@@ -21,6 +21,6 @@ USER agent
 RUN mkdir -p "$HOME/.npm-global" \
   && npm config set prefix "$HOME/.npm-global" \
   && printf '\n# npm user-global prefix\nexport PATH="$HOME/.npm-global/bin:$PATH"\n' >> ~/.bashrc \
-  && npm install -g @mariozechner/pi-coding-agent@latest
+  && npm install -g --ignore-scripts @earendil-works/pi-coding-agent@latest
 
 RUN printf '\n# Auto-launch pi coding agent in interactive shells\nif [[ $- == *i* ]] && command -v pi &> /dev/null; then\n    exec pi\nfi\n' >> ~/.bashrc
