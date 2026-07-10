@@ -12,7 +12,9 @@ ___
 
 The [Dockerfile](./Dockerfile) extends the `shell` template, installs Node 24, installs `pi`, and tweaks `~/.bashrc` to auto-launch `pi` in interactive shells.
 
-Published on GitHub Container Registry (GHCR): `ghcr.io/geut/sbx-shell-pi:node24`
+Published on GitHub Container Registry (GHCR): 
+- `ghcr.io/geut/sbx-shell-pi:node24`
+- `ghcr.io/geut/sbx-shell-pi:node24-docker`
 
 There is also a [Dockerfile.shell-docker](./Dockerfile.shell-docker) file whose only difference is that it uses the [shell-docker](https://hub.docker.com/layers/docker/sandbox-templates/shell-docker/images/) image. With this image, the agent has access to **its own docker daemon**.
 
