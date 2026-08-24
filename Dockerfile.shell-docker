@@ -46,7 +46,8 @@ COPY --chown=agent:agent models.json   /home/agent/.pi/agent/models.json
 # - If .pi/agent/ exists in the project root, it merges into ~/.pi/agent/ (overrides pre-seeded files)
 # - Local Ollama: starts ollama serve, runs ollama signin if needed, then launches pi
 # - Remote Ollama (OLLAMA_HOST set): skips local server/signin, updates baseUrl in models.json
-# - defaultThinkingLevel (xhigh) and reasoning:true are pre-seeded so thinking works
+# - defaultThinkingLevel (xhigh) and reasoning:true are pre-seeded in settings.json/models.json
+# - PI_THINKING env var overrides defaultThinkingLevel in settings.json (only if set)
 # Override model with: sbx run -e PI_MODEL=minimax-m3:cloud ...
 # Override thinking with: sbx run -e PI_THINKING=high ...
 # Use remote Ollama: sbx run -e OLLAMA_HOST=http://host.docker.internal:11434 ...
@@ -65,6 +66,8 @@ if [[ $- == *i* ]] && command -v pi &> /dev/null; then\n\
     else\n\
         sed -i "s|\"baseUrl\"[[:space:]]*:[[:space:]]*\"[^\"]*\"|\"baseUrl\": \"${OLLAMA_HOST%%/}/v1\"|" "$HOME/.pi/agent/models.json" 2>/dev/null\n\
     fi\n\
-    sed -i "s/\"defaultThinkingLevel\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"defaultThinkingLevel\": \"${PI_THINKING:-xhigh}\"/" "$HOME/.pi/agent/settings.json" 2>/dev/null\n\
+    if [[ -n "$PI_THINKING" ]]; then\n\
+        sed -i "s/\"defaultThinkingLevel\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"defaultThinkingLevel\": \"$PI_THINKING\"/" "$HOME/.pi/agent/settings.json" 2>/dev/null\n\
+    fi\n\
     ollama launch pi --model="${PI_MODEL:-glm-5.2:cloud}" --yes\n\
 fi\n' >> ~/.bashrc
