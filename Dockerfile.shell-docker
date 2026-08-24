@@ -37,25 +37,25 @@ RUN unset NPM_CONFIG_PREFIX \
 # Pre-create pi config so thinking works with ollama launch pi
 # ollama launch pi does NOT set defaultThinkingLevel, reasoning:true, or thinkingLevelMap,
 # so we pre-seed them. ollama launch pi merges into these files (preserving our fields) on each run.
-# Users can override models.json by placing one in the project root (workspace).
+# Users can override anything by placing a .pi/agent/ directory in the project root (workspace).
 RUN mkdir -p /home/agent/.pi/agent
 COPY --chown=agent:agent settings.json /home/agent/.pi/agent/settings.json
 COPY --chown=agent:agent models.json   /home/agent/.pi/agent/models.json
 
 # Auto-launch pi via Ollama in interactive shells
-# - If a models.json exists in the project root, it overrides the pre-seeded one
+# - If .pi/agent/ exists in the project root, it merges into ~/.pi/agent/ (overrides pre-seeded files)
 # - Local Ollama: starts ollama serve, runs ollama signin if needed, then launches pi
 # - Remote Ollama (OLLAMA_HOST set): skips local server/signin, updates baseUrl in models.json
 # - defaultThinkingLevel (xhigh) and reasoning:true are pre-seeded so thinking works
 # Override model with: sbx run -e PI_MODEL=minimax-m3:cloud ...
 # Override thinking with: sbx run -e PI_THINKING=high ...
 # Use remote Ollama: sbx run -e OLLAMA_HOST=http://host.docker.internal:11434 ...
-# Use custom models: place models.json in project root
+# Customize pi: place .pi/agent/ directory in project root (models.json, settings.json, skills/, ...)
 RUN printf '\n\
 # Auto-launch pi coding agent (via Ollama) in interactive shells\n\
 if [[ $- == *i* ]] && command -v pi &> /dev/null; then\n\
-    if [[ -f "$HOME/workspace/models.json" ]]; then\n\
-        cp "$HOME/workspace/models.json" "$HOME/.pi/agent/models.json"\n\
+    if [[ -d "$HOME/workspace/.pi/agent" ]]; then\n\
+        cp -r "$HOME/workspace/.pi/agent/." "$HOME/.pi/agent/"\n\
     fi\n\
     if [[ -z "$OLLAMA_HOST" ]]; then\n\
         ollama serve &>/dev/null & sleep 2\n\

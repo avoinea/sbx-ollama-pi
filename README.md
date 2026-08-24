@@ -85,32 +85,24 @@ Cloud models are listed at [ollama.com/search?c=cloud](https://ollama.com/search
 | `minimax-m3:cloud` | ✅ | 524,288 | ✅ |
 | `kimi-k3:cloud` | ✅ | 1,048,576 | ✅ |
 
-### Using a Custom models.json
+### Customizing pi
 
-Place a `models.json` in your project root to override the pre-seeded one. The sandbox auto-detects it on startup and copies it to `~/.pi/agent/models.json` before launching pi. This lets you add custom models, `thinkingLevelMap` entries, or change the `baseUrl`:
+Place a `.pi/agent/` directory in your project root to override or extend the pre-seeded pi configuration. On startup, the sandbox merges it into `~/.pi/agent/` — files you provide override the pre-seeded ones, files you don't provide are kept.
 
-```json
-{
-  "providers": {
-    "ollama": {
-      "api": "openai-completions",
-      "apiKey": "ollama",
-      "baseUrl": "http://127.0.0.1:11434/v1",
-      "models": [
-        {
-          "_launch": true,
-          "contextWindow": 524288,
-          "id": "minimax-m3:cloud",
-          "input": ["text", "image"],
-          "reasoning": true
-        }
-      ]
-    }
-  }
-}
+This lets you customize everything pi supports:
+
+```
+my-project/
+├── .pi/
+│   └── agent/
+│       ├── models.json      ← custom models, thinkingLevelMap, reasoning flags
+│       ├── settings.json    ← custom defaultThinkingLevel, packages, theme
+│       └── skills/           ← custom skills
+├── src/
+└── ...
 ```
 
-When using a custom `models.json`, make sure to include `"reasoning": true` on models that support thinking, otherwise pi will not enable thinking even with `defaultThinkingLevel` set.
+When providing a custom `models.json`, make sure to include `"reasoning": true` on models that support thinking, otherwise pi will not enable thinking even with `defaultThinkingLevel` set.
 
 ### Using a Remote Ollama Server
 
