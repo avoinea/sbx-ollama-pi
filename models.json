@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "ollama": {
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "models": [
+        {
+          "_launch": true,
+          "contextWindow": 1000000,
+          "id": "glm-5.2:cloud",
+          "input": ["text"],
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "high": "high",
+            "xhigh": "max"
+          }
+        }
+      ]
+    }
+  }
+}
