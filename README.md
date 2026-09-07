@@ -10,7 +10,7 @@ ___
 
 ## The Images
 
-The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, and tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `glm-5.2:cloud` from Ollama with thinking level set to `xhigh` (mapped to `max` via `thinkingLevelMap` in [models.json](./models.json)).
+The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, and tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `glm-5.3-flash:cloud` from Ollama with thinking level set to `xhigh` (mapped to `max` via `thinkingLevelMap` in [models.json](./models.json)).
 
 Published on Docker Hub:
 - `avoinea/sbx-ollama-pi`
@@ -23,7 +23,7 @@ There is also a [Dockerfile.shell-docker](./Dockerfile.shell-docker) file whose 
 The image uses [`ollama launch pi`](https://docs.ollama.com/integrations/pi) — Ollama's built-in integration for pi. When the sandbox starts, `.bashrc` runs:
 
 ```bash
-ollama launch pi --model="${PI_MODEL:-glm-5.2:cloud}" --yes
+ollama launch pi --model="${PI_MODEL:-glm-5.3-flash:cloud}" --yes
 ```
 
 This single command handles:
@@ -35,7 +35,7 @@ This single command handles:
 
 **Note:** `ollama launch pi` does not set `defaultThinkingLevel` in `settings.json`, `reasoning: true` in `models.json`, or `thinkingLevelMap` — all are required for thinking to work. The image pre-seeds these files ([settings.json](./settings.json), [models.json](./models.json)) during build. `ollama launch pi` merges into them on each run, preserving the pre-seeded values.
 
-The `thinkingLevelMap` in `models.json` maps pi's thinking levels to the model's actual levels. For `glm-5.2:cloud`, `xhigh` maps to `max` (the model's highest level), since `xhigh` is not natively supported.
+The `thinkingLevelMap` in `models.json` maps pi's thinking levels to the model's actual levels. For `glm-5.3-flash:cloud`, `xhigh` maps to `max` (the model's highest level), since `xhigh` is not natively supported.
 
 When you `/quit` pi, you fall back to a bash shell. Run `ollama launch pi` again to relaunch.
 
@@ -55,7 +55,7 @@ sbx policy init allow-all
 
 ### Authentication
 
-Cloud models (like `glm-5.2:cloud`) require Ollama Cloud authentication. On first launch, if you haven't authenticated, the auto-launch will automatically run `ollama signin` to link your [ollama.com](https://ollama.com) account. Follow the prompts to complete sign-in, then pi will launch automatically.
+Cloud models (like `glm-5.3-flash:cloud`) require Ollama Cloud authentication. On first launch, if you haven't authenticated, the auto-launch will automatically run `ollama signin` to link your [ollama.com](https://ollama.com) account. Follow the prompts to complete sign-in, then pi will launch automatically.
 
 This is separate from pi's `/login`. The `ollama signin` command authenticates the local Ollama server with Ollama Cloud, so cloud model requests are automatically authenticated.
 
@@ -75,13 +75,13 @@ Set the `PI_THINKING` environment variable to use a different thinking level (de
 sbx run -e PI_THINKING=high -t avoinea/sbx-ollama-pi shell [PROJECT_DIR]
 ```
 
-Valid thinking levels: `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Note that `xhigh` maps to `max` for `glm-5.2:cloud` via `thinkingLevelMap`.
+Valid thinking levels: `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`. Note that `xhigh` maps to `max` for `glm-5.3-flash:cloud` via `thinkingLevelMap`.
 
 Cloud models are listed at [ollama.com/search?c=cloud](https://ollama.com/search?c=cloud). Some models support vision (image input) — useful for browser automation with Playwright:
 
 | Model | Vision | Context | Thinking |
 |-------|--------|---------|----------|
-| `glm-5.2:cloud` (default) | ❌ | 1,000,000 | ✅ |
+| `glm-5.3-flash:cloud` (default) | ✅ | 1,048,576 | ✅ |
 | `minimax-m3:cloud` | ✅ | 524,288 | ✅ |
 | `kimi-k3:cloud` | ✅ | 1,048,576 | ✅ |
 
@@ -133,7 +133,7 @@ _OR_ with in-sandbox Docker daemon:
 sbx run -t avoinea/sbx-ollama-pi:docker shell [PROJECT_DIR]
 ```
 
-On first launch, `ollama signin` will automatically prompt you to authenticate with your ollama.com account. After that, pi launches with `glm-5.2:cloud` and thinking level `xhigh` (mapped to `max`). When you `/quit` pi, you get a bash shell.
+On first launch, `ollama signin` will automatically prompt you to authenticate with your ollama.com account. After that, pi launches with `glm-5.3-flash:cloud` and thinking level `xhigh` (mapped to `max`). When you `/quit` pi, you get a bash shell.
 
 ## Node.js Versions
 
