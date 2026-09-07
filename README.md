@@ -169,6 +169,24 @@ OR for the shell-docker variant:
 docker build -t avoinea/sbx-ollama-pi:docker --push -f Dockerfile.shell-docker .
 ```
 
+## CI/CD (GitHub Actions)
+
+On every push to `main` (and on `v*` tags), [.github/workflows/docker.yml](./.github/workflows/docker.yml) builds and pushes both images to Docker Hub and GHCR (multi-arch: `linux/amd64` + `linux/arm64`):
+
+| Image | Dockerfile | Tag on `main` | Tag on `v1.2.3` |
+|-------|------------|---------------|-----------------|
+| `avoinea/sbx-ollama-pi` | `Dockerfile` | `latest`, `sha-<sha>` | `1.2.3`, `1.2`, `sha-<sha>` |
+| `avoinea/sbx-ollama-pi` (shell-docker) | `Dockerfile.shell-docker` | `docker`, `docker-sha-<sha>` | `docker-1.2.3`, `docker-1.2`, `docker-sha-<sha>` |
+
+**Required repository secrets** (Settings → Secrets and variables → Actions):
+
+- `DOCKERHUB_USERNAME` — your Docker Hub username
+- `DOCKERHUB_TOKEN` — a [Docker Hub access token](https://docs.docker.com/security/for-developers/access-tokens/) (not your password)
+
+GHCR login uses the built-in `GITHUB_TOKEN` — no extra setup needed.
+
+The workflow can also be triggered manually from the Actions tab (`workflow_dispatch`). Builds are cached per Dockerfile via GitHub Actions cache.
+
 ## Acknowledgements
 
 This is a fork of [geut/sbx-shell-pi](https://github.com/geut/sbx-shell-pi), originally based on Oleg Šelajev's article [Building custom Docker Sandboxes](https://olegselajev.substack.com/p/building-custom-docker-sandboxes). ~~One key difference: local images never worked for me. `sbx save` completes, but referencing a local image fails. sbx appears to look up the image in a registry instead (you can see this by inspecting `sbx daemon` output).~~
