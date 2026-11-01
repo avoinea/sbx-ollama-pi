@@ -1,0 +1,47 @@
+name: Publish Kits
+
+# The kits reference the template images by tag, so they only need republishing
+# when their spec changes. Re-running by hand after an image change is harmless.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pi/**"
+      - "pi-docker/**"
+      - ".github/workflows/kits.yml"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Push kits to Docker Hub
+    # sbx ships for arm64 macOS 14+ and Linux; the kit registry session comes
+    # from the Docker credential store that the login step below writes.
+    runs-on: macos-14
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sbx
+        run: brew install --cask docker/tap/sbx
+
+      - name: Start the sandbox daemon
+        run: |
+          sbx daemon start
+          sbx diagnose
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push kits
+        env:
+          NAMESPACE: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          set -euo pipefail
+          sbx kit push ./pi "docker.io/${NAMESPACE}/pi:latest"
+          sbx kit push ./pi-docker "docker.io/${NAMESPACE}/pi-docker:latest"
