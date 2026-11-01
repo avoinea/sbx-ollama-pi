@@ -136,6 +136,25 @@ sbx run -t avoinea/sbx-ollama-pi:docker shell [PROJECT_DIR]
 
 On first launch, `ollama signin` will automatically prompt you to authenticate with your ollama.com account. After that, pi launches with `deepseek-v4.1-flash:1017-cloud` and thinking level `max`. When you `/quit` pi, you get a bash shell.
 
+## Sandbox name and the `pi` kit
+
+`sbx` names a sandbox `<agent>-<directory>`, where the first positional argument is the agent or kit you launch. `sbx run -t avoinea/sbx-ollama-pi shell [PROJECT_DIR]` creates `shell-<directory>`, because `shell` is the agent whose image you replace with `--template`.
+
+The [pi](./pi/spec.yaml) directory is a minimal sandbox kit that names the agent `pi` and points at this image:
+
+```bash
+sbx run ./pi [PROJECT_DIR]      # creates pi-<directory>
+```
+
+It is the same sandbox as the `--template` form, with a different name. Push it to a registry to use it by reference:
+
+```bash
+sbx kit push ./pi docker.io/avoinea/pi:latest
+sbx run avoinea/pi [PROJECT_DIR]
+```
+
+Kits can also carry the launch entrypoint, network permissions, setup steps, and agent instructions; see the [kit spec reference](https://docs.docker.com/ai/sandboxes/customize/kit-reference/). Everything in [Using with T3 Code](#using-with-t3-code) works the same with the kit.
+
 ## Using with T3 Code
 
 [T3 Code](https://t3.codes) is a desktop, web, and mobile client that drives coding agents — including [pi](https://pi.dev) — and can run them inside a Docker Sandbox. There is no dedicated `sbx` integration: T3 Code treats the sandbox as an ordinary SSH host, starts a T3 server inside it, and tunnels that back over the connection ([Docker docs](https://docs.docker.com/ai/sandboxes/integrations/t3-code/)).
