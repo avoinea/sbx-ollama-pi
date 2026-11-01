@@ -51,9 +51,13 @@ RUN . "$NVM_DIR/nvm.sh" \
 # ollama launch pi does NOT set defaultThinkingLevel, reasoning:true, or thinkingLevelMap,
 # so we pre-seed them. ollama launch pi merges into these files (preserving our fields) on each run.
 # Users can override anything by placing a .pi/agent/ directory in the project root (workspace).
-RUN mkdir -p /home/agent/.pi/agent
+RUN mkdir -p /home/agent/.pi/agent/skills
 COPY --chown=agent:agent settings.json /home/agent/.pi/agent/settings.json
 COPY --chown=agent:agent models.json   /home/agent/.pi/agent/models.json
+
+# Bundle the workflow skills (grill-me, handoff, review) in the user skills dir.
+# A project .pi/agent/skills/ in the workspace is merged on top at startup.
+COPY --chown=agent:agent skills/ /home/agent/.pi/agent/skills/
 
 # Auto-launch pi via Ollama in interactive shells
 # - If .pi/agent/ exists in the sbx workspace ($WORKSPACE_DIR), it merges into ~/.pi/agent/ (overrides pre-seeded files)

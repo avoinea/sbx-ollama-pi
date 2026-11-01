@@ -105,6 +105,18 @@ my-project/
 
 When providing a custom `models.json`, make sure to include `"reasoning": true` on models that support thinking, otherwise pi will not enable thinking even with `defaultThinkingLevel` set.
 
+### Bundled skills
+
+The images ship three workflow skills in `~/.pi/agent/skills/`, available in every sandbox without extra setup:
+
+| Skill | When it kicks in |
+|---|---|
+| `/skill:grill-me` | Stress-tests a plan or design: interviews you one question at a time, walking each branch of the decision tree and recommending an answer per question. |
+| `/skill:handoff` | Compacts the session into `docs/<session-slug>/` (`README`, `DECISIONS`, `PLAN`, `REPORT`, `TODO`, `HANDOFF`) plus `docs/handoff-next.md`, so a fresh agent can continue. |
+| `/skill:review` | Reviews `git diff develop` / `git diff master` for production safety, edge cases and backward incompatibility; can also inspect open PRs with `gh`. |
+
+The sources live in [`skills/`](skills/) and are copied into the image at build time. To override or extend them per project, drop your own `skills/<name>/SKILL.md` into the workspace `.pi/agent/` — the startup merge copies it over the bundled version (see above).
+
 ### Using a Remote Ollama Server
 
 If you have Ollama running on your host, use `host.docker.internal` to reach it from inside the sandbox (not `localhost`, which refers to the sandbox itself):
