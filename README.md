@@ -283,6 +283,14 @@ GHCR login uses the built-in `GITHUB_TOKEN` — no extra setup needed.
 
 The workflow can also be triggered manually from the Actions tab (`workflow_dispatch`). Builds are cached per Dockerfile via GitHub Actions cache.
 
+The [kits workflow](./.github/workflows/kits.yml) publishes the [pi](./pi/spec.yaml) and [pi-docker](./pi-docker/spec.yaml) kits to Docker Hub whenever their specs change, or on `workflow_dispatch`. It runs on a macOS runner because `sbx` ships for arm64 macOS and Linux, and `sbx kit push` needs the sandbox daemon. The kits point at the template images by tag, so an image rebuild does not need a kit republish; push by hand if you change a spec outside CI:
+
+```bash
+sbx kit push ./pi docker.io/avoinea/pi:latest
+sbx kit push ./pi-docker docker.io/avoinea/pi-docker:latest
+```
+
+
 ## Acknowledgements
 
 This is a fork of [geut/sbx-shell-pi](https://github.com/geut/sbx-shell-pi), originally based on Oleg Šelajev's article [Building custom Docker Sandboxes](https://olegselajev.substack.com/p/building-custom-docker-sandboxes). ~~One key difference: local images never worked for me. `sbx save` completes, but referencing a local image fails. sbx appears to look up the image in a registry instead (you can see this by inspecting `sbx daemon` output).~~
