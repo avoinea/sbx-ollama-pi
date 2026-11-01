@@ -155,6 +155,17 @@ sbx run avoinea/pi [PROJECT_DIR]
 
 Kits can also carry the launch entrypoint, network permissions, setup steps, and agent instructions; see the [kit spec reference](https://docs.docker.com/ai/sandboxes/customize/kit-reference/). Everything in [Using with T3 Code](#using-with-t3-code) works the same with the kit.
 
+[bin/pix](./bin/pix) wraps that: it names the sandbox `pi-<directory>` after the current directory, creates it from `avoinea/pi` the first time, and attaches to it on later runs.
+
+```bash
+ln -s "$PWD/bin/pix" ~/.local/bin/pix    # once
+pix                                      # attach, or create pi-<directory>
+PIX_KIT=avoinea/pi-docker pix            # the shell-docker variant, Docker inside
+PIX_NAME=scratch pix                     # a fixed sandbox name
+```
+
+The kit reference is only passed at creation. `sbx` reads the agent from an existing sandbox's stored spec, so re-running `pix` in a directory always reattaches instead of recreating.
+
 ## Using with T3 Code
 
 [T3 Code](https://t3.codes) is a desktop, web, and mobile client that drives coding agents — including [pi](https://pi.dev) — and can run them inside a Docker Sandbox. There is no dedicated `sbx` integration: T3 Code treats the sandbox as an ordinary SSH host, starts a T3 server inside it, and tunnels that back over the connection ([Docker docs](https://docs.docker.com/ai/sandboxes/integrations/t3-code/)).

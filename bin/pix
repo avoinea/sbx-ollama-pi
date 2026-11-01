@@ -1,0 +1,15 @@
+#!/bin/bash
+# Attach to the pi sandbox for this directory, creating it from the published kit.
+# PIX_KIT overrides the kit (e.g. avoinea/pi-docker), PIX_NAME the sandbox name.
+#
+# The kit reference is only passed at creation: for an existing sandbox `sbx`
+# reads the agent from its stored spec, so passing it again would recreate it.
+
+SBX_NAME="${PIX_NAME:-pi-$(basename "$(pwd)")}"
+SBX_KIT="${PIX_KIT:-avoinea/pi}"
+
+if sbx ls -q 2>/dev/null | grep -qx "$SBX_NAME"; then
+  exec sbx run --name "$SBX_NAME"
+else
+  exec sbx run --name "$SBX_NAME" "$SBX_KIT" "$@"
+fi

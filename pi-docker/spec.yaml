@@ -1,0 +1,11 @@
+schemaVersion: "2"
+kind: sandbox
+name: pi-docker
+displayName: pi (Ollama, Docker inside)
+description: pi coding agent with a local Ollama server, from the sbx-ollama-pi template image.
+sourceURL: https://github.com/avoinea/sbx-ollama-pi
+licenses:
+  - MIT
+
+sandbox:
+  image: docker.io/avoinea/sbx-ollama-pi:docker
