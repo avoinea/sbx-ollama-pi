@@ -16,7 +16,7 @@ jobs:
     name: Push kits to Docker Hub
     # sbx ships for arm64 macOS 14+ and Linux; the kit registry session comes
     # from the Docker credential store that the login step below writes.
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: read
 
