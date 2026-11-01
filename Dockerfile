@@ -84,3 +84,15 @@ if [[ $- == *i* ]] && command -v pi &> /dev/null; then\n\
     fi\n\
     ollama launch pi --model="${PI_MODEL:-deepseek-v4.1-flash:1017-cloud}" --yes\n\
 fi\n' >> ~/.bashrc
+
+# Point the empty ~/workspace at the mounted workspace (see the block below).
+USER root
+RUN printf '\n\
+# Point ~/workspace at the real workspace. The base image leaves this directory\n\
+# empty and sbx mounts the host directory at its own absolute path, so tools\n\
+# that default to ~/workspace (T3 Code, VS Code) would open nothing.\n\
+if [ -n "${WORKSPACE_DIR:-}" ] && [ -d "$HOME/workspace" ] && [ ! -L "$HOME/workspace" ] && [ -z "$(ls -A "$HOME/workspace" 2>/dev/null)" ]; then\n\
+  rmdir "$HOME/workspace" 2>/dev/null && ln -s "$WORKSPACE_DIR" "$HOME/workspace"\n\
+fi\n' >> /etc/sandbox-persistent.sh
+
+USER agent

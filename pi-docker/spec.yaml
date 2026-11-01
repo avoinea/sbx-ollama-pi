@@ -9,3 +9,14 @@ licenses:
 
 sandbox:
   image: docker.io/avoinea/sbx-ollama-pi:docker
+
+setup:
+  startup:
+    - description: Point ~/workspace at the mounted workspace
+      command:
+        - sh
+        - -c
+        - >-
+          if [ -d "$HOME/workspace" ] && [ ! -L "$HOME/workspace" ] &&
+          [ -z "$(ls -A "$HOME/workspace")" ]; then rmdir "$HOME/workspace" &&
+          ln -s "$WORKSPACE_DIR" "$HOME/workspace"; fi

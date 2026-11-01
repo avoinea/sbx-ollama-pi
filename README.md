@@ -203,7 +203,7 @@ The first connection installs the T3 server inside the sandbox, so it takes a mo
 
 ### Workspace path
 
-`sbx` bind-mounts the directory you launch from at its **host absolute path** and exports it as `WORKSPACE_DIR`. It does not mount it at `/home/agent/workspace` — the base image creates that directory, but it stays empty. So a sandbox can be started from any directory, and the project path is simply that directory:
+`sbx` bind-mounts the directory you launch from at its **host absolute path** and exports it as `WORKSPACE_DIR`. The base image also creates an empty `/home/agent/workspace`, which tools that default to it (T3 Code, VS Code) would open as a blank project, so the image points `~/workspace` at `$WORKSPACE_DIR` — a symlink created on the first shell that starts in the sandbox, and the `pi` kits do the same with a `setup.startup` entry. Either path works; a sandbox can be started from any directory, and the project path is simply that directory:
 
 ```bash
 sbx run -t avoinea/sbx-ollama-pi shell ~/sandbox/eea-website
