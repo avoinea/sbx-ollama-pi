@@ -10,7 +10,7 @@ ___
 
 ## The Images
 
-The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, and tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `deepseek-v4.1-flash:1017-cloud` from Ollama with thinking level set to `max` (see [settings.json](./settings.json) and [models.json](./models.json)).
+The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, plus `t3` for [T3 Code](#using-with-t3-code), and tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `deepseek-v4.1-flash:1017-cloud` from Ollama with thinking level set to `max` (see [settings.json](./settings.json) and [models.json](./models.json)).
 
 Published on Docker Hub:
 - `avoinea/sbx-ollama-pi`
@@ -135,6 +135,58 @@ sbx run -t avoinea/sbx-ollama-pi:docker shell [PROJECT_DIR]
 ```
 
 On first launch, `ollama signin` will automatically prompt you to authenticate with your ollama.com account. After that, pi launches with `deepseek-v4.1-flash:1017-cloud` and thinking level `max`. When you `/quit` pi, you get a bash shell.
+
+## Using with T3 Code
+
+[T3 Code](https://t3.codes) is a desktop, web, and mobile client that drives coding agents — including [pi](https://pi.dev) — and can run them inside a Docker Sandbox. There is no dedicated `sbx` integration: T3 Code treats the sandbox as an ordinary SSH host, starts a T3 server inside it, and tunnels that back over the connection ([Docker docs](https://docs.docker.com/ai/sandboxes/integrations/t3-code/)).
+
+The image is ready for that:
+
+- `pi` and `t3` are installed under the nvm Node versions **and** linked into `~/.local/bin`, which is first on the image `PATH`. Non-interactive shells (`sh -lc`) — what T3 Code uses to start providers — find both.
+- `libatomic1`, `curl`, `tar`, and `sha256sum` are installed, which the `t3` runtime that T3 Code downloads into `~/.t3/runtime/versions/` on the first connection needs.
+
+Both Node 22.23.4 and the current `pi` (1.4.0) satisfy T3 Code's requirements for the Pi provider: Node.js 22.19 or newer and Pi 0.80.5 or newer.
+
+### Setup
+
+1. Enable SSH access to sandboxes once. It writes an `Include` to `~/.ssh/config` and needs no keys — authentication goes through the `sbx` daemon and your Docker login:
+
+```bash
+sbx setup ssh
+```
+
+2. Start the sandbox from this image:
+
+```bash
+sbx run -t avoinea/sbx-ollama-pi shell [PROJECT_DIR]
+```
+
+3. Find its name with `sbx ls`, then confirm the host works (the pattern is `<sandbox>.sbx`):
+
+```bash
+ssh shell-myproject.sbx
+```
+
+4. In T3 Code, open **Settings → Environments → Add environment**, choose **SSH**, and enter that host. Then add a project using the workspace path inside the sandbox — the sandbox mounts the host directory at the same absolute path, e.g. `/Users/you/project`.
+
+The first connection installs the T3 server inside the sandbox, so it takes a moment; later connections are fast.
+
+### Keep Ollama running
+
+T3 Code starts `pi` directly, not through the interactive `.bashrc` auto-launch, so the in-sandbox Ollama server that `models.json` points at (`http://127.0.0.1:11434/v1`) has to be running while T3 uses it:
+
+```bash
+sbx exec shell-myproject -- sh -c 'setsid nohup ollama serve >/tmp/ollama.log 2>&1 &'
+```
+
+To use a host Ollama instead, allow `localhost:11434` and start the sandbox with `OLLAMA_HOST` (see [Using a Remote Ollama Server](#using-a-remote-ollama-server)), then point `baseUrl` in `.pi/agent/models.json` — or the project's `.pi/agent/models.json` — at that URL.
+
+`PI_MODEL` and `PI_THINKING` only affect the interactive auto-launch. With T3 Code, pick the model in the composer, or override the pre-seeded `~/.pi/agent/` files from the project's `.pi/agent/` directory as described in [Customizing pi](#customizing-pi).
+
+### Two things not to do
+
+- **Don't add the `t3code` kit** (`--kit docker.io/sbx/t3code-kit:latest`). It installs `t3` as root into an npm prefix this image doesn't have and aborts sandbox creation with `t3: Too many levels of symbolic links`. `t3` is already in the image.
+- **Don't use T3 Connect (`t3 connect`) from inside a sandbox.** That path needs outbound TCP 7844 (QUIC/UDP egress is disabled in `sbx`), an allow rule for the `h2.cftunnel.com` SNI the tunnel client dials, and SRV DNS records the sandbox resolver doesn't serve — and the sandbox has to stay running. The SSH environment above needs none of it.
 
 ## Node.js Versions
 

@@ -6,7 +6,7 @@ USER root
 
 # Install dependencies for Ollama and nvm
 RUN apt-get update \
-    && apt-get install -y curl ca-certificates gnupg zstd \
+    && apt-get install -y curl ca-certificates gnupg zstd libatomic1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -33,6 +33,19 @@ RUN unset NPM_CONFIG_PREFIX \
     && nvm use 24 \
     && npm install -g --ignore-scripts @earendil-works/pi-coding-agent@latest \
     && nvm use default
+
+# Make the nvm-installed CLIs reachable from non-interactive shells.
+# nvm only exports PATH from ~/.bashrc/nvm.sh, so `sh -lc` (what T3 and most
+# agents use to spawn providers) never sees them. ~/.local/bin is already
+# first on the image PATH, so link pi and t3 there instead.
+RUN . "$NVM_DIR/nvm.sh" \
+    && nvm use default \
+    && npm install -g t3 \
+    && mkdir -p "$HOME/.local/bin" \
+    && NODE_BIN="$(dirname "$(nvm which default)")" \
+    && ln -sf "$NODE_BIN/pi" "$HOME/.local/bin/pi" \
+    && ln -sf "$NODE_BIN/t3" "$HOME/.local/bin/t3" \
+    && sh -lc 'pi --version && t3 --version'
 
 # Pre-create pi config so thinking works with ollama launch pi
 # ollama launch pi does NOT set defaultThinkingLevel, reasoning:true, or thinkingLevelMap,
