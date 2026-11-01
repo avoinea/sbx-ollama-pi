@@ -88,7 +88,7 @@ Cloud models are listed at [ollama.com/search?c=cloud](https://ollama.com/search
 
 ### Customizing pi
 
-Place a `.pi/agent/` directory in your project root to override or extend the pre-seeded pi configuration. On startup, the sandbox merges it into `~/.pi/agent/` — files you provide override the pre-seeded ones, files you don't provide are kept.
+Place a `.pi/agent/` directory in your project root — the directory you pass to `sbx run`, available inside the sandbox as `$WORKSPACE_DIR` — to override or extend the pre-seeded pi configuration. On startup, the sandbox merges it into `~/.pi/agent/` — files you provide override the pre-seeded ones, files you don't provide are kept.
 
 This lets you customize everything pi supports:
 
@@ -167,9 +167,22 @@ sbx run -t avoinea/sbx-ollama-pi shell [PROJECT_DIR]
 ssh shell-myproject.sbx
 ```
 
-4. In T3 Code, open **Settings → Environments → Add environment**, choose **SSH**, and enter that host. Then add a project using the workspace path inside the sandbox — the sandbox mounts the host directory at the same absolute path, e.g. `/Users/you/project`.
+4. In T3 Code, open **Settings → Environments → Add environment**, choose **SSH**, and enter that host. Then add a project using the workspace path inside the sandbox — it is the directory you passed to `sbx run`, mounted at the same absolute path, e.g. `/Users/you/project` (see [Workspace path](#workspace-path)).
 
 The first connection installs the T3 server inside the sandbox, so it takes a moment; later connections are fast.
+
+### Workspace path
+
+`sbx` bind-mounts the directory you launch from at its **host absolute path** and exports it as `WORKSPACE_DIR`. It does not mount it at `/home/agent/workspace` — the base image creates that directory, but it stays empty. So a sandbox can be started from any directory, and the project path is simply that directory:
+
+```bash
+sbx run -t avoinea/sbx-ollama-pi shell ~/sandbox/eea-website
+# inside: cwd and $WORKSPACE_DIR are /Users/you/sandbox/eea-website
+
+sbx exec shell-eea-website -- printenv WORKSPACE_DIR
+```
+
+Use the same path as the project directory in T3 Code. The auto-launch merges a project `.pi/agent/` from `$WORKSPACE_DIR`, so per-project pi config works from any workspace. Without a workspace argument there is no mount and `WORKSPACE_DIR` is unset; T3 Code still connects, but there is no project to open.
 
 ### Keep Ollama running
 

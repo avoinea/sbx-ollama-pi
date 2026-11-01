@@ -56,7 +56,7 @@ COPY --chown=agent:agent settings.json /home/agent/.pi/agent/settings.json
 COPY --chown=agent:agent models.json   /home/agent/.pi/agent/models.json
 
 # Auto-launch pi via Ollama in interactive shells
-# - If .pi/agent/ exists in the project root, it merges into ~/.pi/agent/ (overrides pre-seeded files)
+# - If .pi/agent/ exists in the sbx workspace ($WORKSPACE_DIR), it merges into ~/.pi/agent/ (overrides pre-seeded files)
 # - Local Ollama: starts ollama serve, runs ollama signin if needed, then launches pi
 # - Remote Ollama (OLLAMA_HOST set): skips local server/signin, updates baseUrl in models.json
 # - defaultThinkingLevel (max) and reasoning:true are pre-seeded in settings.json/models.json
@@ -68,8 +68,8 @@ COPY --chown=agent:agent models.json   /home/agent/.pi/agent/models.json
 RUN printf '\n\
 # Auto-launch pi coding agent (via Ollama) in interactive shells\n\
 if [[ $- == *i* ]] && command -v pi &> /dev/null; then\n\
-    if [[ -d "$HOME/workspace/.pi/agent" ]]; then\n\
-        cp -r "$HOME/workspace/.pi/agent/." "$HOME/.pi/agent/"\n\
+    if [[ -n "$WORKSPACE_DIR" && -d "$WORKSPACE_DIR/.pi/agent" ]]; then\n\
+        cp -r "$WORKSPACE_DIR/.pi/agent/." "$HOME/.pi/agent/"\n\
     fi\n\
     if [[ -z "$OLLAMA_HOST" ]]; then\n\
         ollama serve &>/dev/null & sleep 2\n\
