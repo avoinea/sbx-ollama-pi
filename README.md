@@ -10,7 +10,7 @@ ___
 
 ## The Images
 
-The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, plus `t3` for [T3 Code](#using-with-t3-code), and tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `deepseek-v4.1-flash:1017-cloud` from Ollama with thinking level set to `max` (see [settings.json](./settings.json) and [models.json](./models.json)).
+The [Dockerfile](./Dockerfile) extends the `shell` template, installs [Ollama](https://ollama.com), [nvm](https://github.com/nvm-sh/nvm) with Node.js 22 and 24, and `pi`, plus `t3` for [T3 Code](#using-with-t3-code). It also makes Python usable out of the box (see [Python](#python)). Finally it tweaks `~/.bashrc` to auto-launch `pi` via `ollama launch pi`. The default model is `deepseek-v4.1-flash:1017-cloud` from Ollama with thinking level set to `max` (see [settings.json](./settings.json) and [models.json](./models.json)).
 
 Published on Docker Hub:
 - `avoinea/sbx-ollama-pi`
@@ -258,6 +258,30 @@ Override the default at build time:
 ```bash
 docker build --build-arg NODE_DEFAULT=24 -t avoinea/sbx-ollama-pi .
 ```
+
+## Python
+
+The base image ships `python3`, `pip` and [`uv`](https://docs.astral.sh/uv/), but without the `venv`/`ensurepip` packages, so `python3 -m venv` failed. The image adds `python3-venv`, `python3-dev` (headers for building C extensions), `python3-pip` and `python-is-python3`, so both `python` and `python3` work:
+
+```bash
+python --version   # Python 3.14.x
+```
+
+Use a virtualenv for per-project dependencies:
+
+```bash
+python -m venv .venv && . .venv/bin/activate
+pip install requests
+```
+
+Or let `uv` manage it (it is preinstalled, together with the `uvx` shim for one-off tools):
+
+```bash
+uv venv && uv pip install requests
+uvx ruff check .        # run a tool without installing it into a project
+```
+
+`pip install` into the **system** interpreter is blocked on purpose by [PEP 668](https://peps.python.org/pep-0668/) (`error: externally-managed-environment`), because apt owns those packages. Use a venv, `uv`, or `pip install --break-system-packages` if you really mean it.
 
 ## Updating the Image
 
